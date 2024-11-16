@@ -1,0 +1,22 @@
+import turtle as tt
+import os 
+
+ventana = tt.Screen()
+ventana.title("Pong 4-P")
+ventana.bgcolor("black")
+ventana.setup(width=800, height=600)
+ventana.tracer(0)
+
+# Creación de raquetas
+
+# Raqueta 1
+raqueta_1 = tt.Turtle()
+raqueta_1.speed(0)
+raqueta_1.shape("square")
+raqueta_1.shapesize(stretch_wid=5, stretch_len=1)
+raqueta_1.color("white")
+raqueta_1.penup()
+raqueta_1.goto(-350, 0)
+
+while True:
+    ventana.update()
