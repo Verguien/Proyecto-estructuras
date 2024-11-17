@@ -1,22 +1,188 @@
 import turtle as tt
-import os 
+import time
+import winsound as ws 
+
+ancho = 800
+alto = 600
 
 ventana = tt.Screen()
 ventana.title("Pong 4-P")
 ventana.bgcolor("black")
-ventana.setup(width=800, height=600)
+ventana.setup(width=ancho, height=alto)
 ventana.tracer(0)
 
-# Creación de raquetas
-
-# Raqueta 1
+# Raqueta 1 (izquierda)
 raqueta_1 = tt.Turtle()
 raqueta_1.speed(0)
 raqueta_1.shape("square")
 raqueta_1.shapesize(stretch_wid=5, stretch_len=1)
 raqueta_1.color("white")
 raqueta_1.penup()
-raqueta_1.goto(-350, 0)
+raqueta_1.goto(-((ancho/2) -50), 0)
 
+# Raqueta 2 (derecha)
+raqueta_2 = tt.Turtle()
+raqueta_2.speed(0)
+raqueta_2.shape("square")
+raqueta_2.shapesize(stretch_wid=5, stretch_len=1)
+raqueta_2.color("white")
+raqueta_2.penup()
+raqueta_2.goto(((ancho/2) - 50), 0)
+
+"""# Raqueta 3 (arriba)
+raqueta_3 = tt.Turtle()
+raqueta_3.speed(0)
+raqueta_3.shape("square")
+raqueta_3.shapesize(stretch_wid=1, stretch_len=5)
+raqueta_3.color("white")
+raqueta_3.penup()
+raqueta_3.goto(0, ((alto/2) - 50))
+
+# Raqueta 4 (abajo)
+raqueta_4 = tt.Turtle()
+raqueta_4.speed(0)
+raqueta_4.shape("square")
+raqueta_4.shapesize(stretch_wid=1, stretch_len=5)
+raqueta_4.color("white")
+raqueta_4.penup()
+raqueta_4.goto(0, -((alto/2) - 50))"""
+
+# Pelota (parte del centro)
+pelota = tt.Turtle()
+pelota.speed(0)
+pelota.shape("square")
+pelota.color("white")
+pelota.penup()
+pelota.goto(0, 0)
+pelota_dx = 2
+pelota_dy = 2
+
+# Marcador de puntaje
+marcador = tt.Turtle()
+marcador.speed(0)
+marcador.color("white")
+marcador.penup()
+marcador.hideturtle()
+marcador.goto(0, ((alto/2) - 60))
+marcador.write("Jugador 1: 0      Jugador 2: 0", align="center", font=("Comic Sans MS", 18, "bold"))
+
+# Puntajes
+puntaje_j1 = 0
+puntaje_j2 = 0
+
+# Funciones de movimiento
+def raqueta_1_arriba():
+    y = raqueta_1.ycor()
+    if y < ((alto/2) - 50):
+        y += 20
+        raqueta_1.sety(y)
+
+def raqueta_2_arriba():
+    y = raqueta_2.ycor()
+    if y < ((alto/2) - 50):
+        y += 20
+        raqueta_2.sety(y)
+
+def raqueta_1_abajo():
+    y = raqueta_1.ycor()
+    if y > -((alto/2) - 50):
+        y -= 20
+        raqueta_1.sety(y)
+
+def raqueta_2_abajo():
+    y = raqueta_2.ycor()
+    if y > -((alto/2) - 50):
+        y -= 20
+        raqueta_2.sety(y)
+
+"""def raqueta_3_derecha():
+    x = raqueta_3.xcor()
+    if x < ((ancho/2) - 50):
+        x += 20
+        raqueta_3.setx(x)
+
+def raqueta_3_izquierda():
+    x = raqueta_3.xcor()
+    if x > -((ancho/2) - 50):
+        x -= 20
+        raqueta_3.setx(x)
+
+def raqueta_4_derecha():
+    x = raqueta_4.xcor()
+    if x < ((ancho/2) - 50):
+        x += 20
+        raqueta_4.setx(x)
+
+def raqueta_4_izquierda():
+    x = raqueta_4.xcor()
+    if x > -((ancho/2) - 50):
+        x -= 20
+        raqueta_4.setx(x)"""
+
+
+# Asignaciones de teclado
+ventana.listen()
+
+ventana.onkeypress(raqueta_1_arriba, "w")
+ventana.onkeypress(raqueta_1_abajo, "s")
+ventana.onkey(raqueta_2_arriba, "Up")
+ventana.onkeypress(raqueta_2_abajo, "Down")
+
+"""ventana.onkeypress(raqueta_3_derecha, "p")
+ventana.onkeypress(raqueta_3_izquierda, "o")
+ventana.onkeypress(raqueta_4_derecha, "b")
+ventana.onkeypress(raqueta_4_izquierda, "v")"""
+
+
+# Ejecución del juego
 while True:
+
+    # Hace que la ventana se actualice cada 1/60 segundo, es decir, que se actualice 60 veces por segundo 
+    time.sleep(1/60) 
+
     ventana.update()
+
+    # Movimiento de la pelota
+    pelota.setx(pelota.xcor() + pelota_dx)
+    pelota.sety(pelota.ycor() + pelota_dy)
+
+    # Choques con los bordes
+    if pelota.ycor() > ((alto/2) - 10):
+        pelota.sety((alto/2) - 10)
+        pelota_dy *= -1
+        ws.PlaySound("4to Corte\\bounce.wav", ws.SND_ASYNC)
+
+    if pelota.ycor() < -((alto/2) - 10):
+        pelota.sety(-((alto/2) - 10))
+        pelota_dy *= -1
+        ws.PlaySound("4to Corte\\bounce.wav", ws.SND_ASYNC)
+
+    # Puntos para los jugadores
+    if pelota.xcor() > ((ancho/2) - 10):
+        pelota.goto(0,0)
+        pelota_dx *= -1
+        puntaje_j1 += 1
+        marcador.clear()
+        marcador.write("Jugador 1: {}      Jugador 2: {}".format(puntaje_j1, puntaje_j2), align="center", font=("Comic Sans MS", 18, "bold"))
+
+    if pelota.xcor() < -((ancho/2 - 10)):
+        pelota.goto(0,0)
+        pelota_dx *= -1
+        puntaje_j2 += 1
+        marcador.clear()
+        marcador.write("Jugador 1: {}      Jugador 2: {}".format(puntaje_j1, puntaje_j2), align="center", font=("Comic Sans MS", 18, "bold"))
+    
+    # Coques con las raquetas
+    if (-((ancho/2) - 50) < pelota.xcor() < -((ancho/2) - 60)) and (raqueta_1.ycor() - 50 < pelota.ycor() < raqueta_1.ycor() + 50):
+        pelota_dx *= -1
+        ws.PlaySound("4to Corte\\bounce.wav", ws.SND_ASYNC)
+
+    if (((ancho/2) - 60) < pelota.xcor() < ((ancho/2) - 50)) and (raqueta_2.ycor() - 50 < pelota.ycor() < raqueta_2.ycor() + 50):
+        pelota_dx *= -1
+        ws.PlaySound("4to Corte\\bounce.wav", ws.SND_ASYNC)
+
+    """if (((alto/2) - 60) < pelota.ycor() > ((alto/2) - 50)) and (raqueta_3.xcor() - 50 < pelota.xcor() < raqueta_3.xcor() + 50 ):
+        pelota_dy *= -1
+
+    if (-((alto/2) - 50) < pelota.ycor() < -((alto/2) - 60)) and (raqueta_4.xcor() - 50 < pelota.xcor() < raqueta_4.xcor() + 50):
+        pelota_dy *= -1"""
