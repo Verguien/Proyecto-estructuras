@@ -150,12 +150,12 @@ while True:
     if pelota.ycor() > ((alto/2) - 10):
         pelota.sety((alto/2) - 10)
         pelota_dy *= -1
-        ws.PlaySound("4to Corte\\bounce.wav", ws.SND_ASYNC)
+        ws.PlaySound("bounce.wav", ws.SND_ASYNC)
 
     if pelota.ycor() < -((alto/2) - 10):
         pelota.sety(-((alto/2) - 10))
         pelota_dy *= -1
-        ws.PlaySound("4to Corte\\bounce.wav", ws.SND_ASYNC)
+        ws.PlaySound("bounce.wav", ws.SND_ASYNC)
 
     # Puntos para los jugadores
     if pelota.xcor() > ((ancho/2) - 10):
@@ -172,14 +172,14 @@ while True:
         marcador.clear()
         marcador.write("Jugador 1: {}      Jugador 2: {}".format(puntaje_j1, puntaje_j2), align="center", font=("Comic Sans MS", 18, "bold"))
     
-    # Coques con las raquetas
+    # Choques con las raquetas
     if (-((ancho/2) - 50) < pelota.xcor() < -((ancho/2) - 60)) and (raqueta_1.ycor() - 50 < pelota.ycor() < raqueta_1.ycor() + 50):
         pelota_dx *= -1
-        ws.PlaySound("4to Corte\\bounce.wav", ws.SND_ASYNC)
+        ws.PlaySound("bounce.wav", ws.SND_ASYNC)
 
     if (((ancho/2) - 60) < pelota.xcor() < ((ancho/2) - 50)) and (raqueta_2.ycor() - 50 < pelota.ycor() < raqueta_2.ycor() + 50):
         pelota_dx *= -1
-        ws.PlaySound("4to Corte\\bounce.wav", ws.SND_ASYNC)
+        ws.PlaySound("bounce.wav", ws.SND_ASYNC)
 
     """if (((alto/2) - 60) < pelota.ycor() > ((alto/2) - 50)) and (raqueta_3.xcor() - 50 < pelota.xcor() < raqueta_3.xcor() + 50 ):
         pelota_dy *= -1
