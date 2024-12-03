@@ -1,0 +1,554 @@
+import turtle as tt
+import random
+import time
+import winsound as ws
+
+# Definición de dimensiones
+ancho = 800
+alto = 600
+
+# Crear la ventana de Turtle
+ventana = tt.Screen()
+ventana.title("Pong 4-P")
+ventana.bgcolor("black")
+ventana.setup(width=ancho, height=alto)
+ventana.tracer(0)
+
+jugadores = 2  # El número de jugadores, por defecto, 2 
+colores_raquetas = ["white", "white", "white", "white"]  # Colores de las raquetas
+ultimo_jugador = 0  # Llevará el registro del último jugador en tocar la pelota
+
+# Función para crear raquetas
+def crear_raquetas():
+    # Se crean variables globales para poder usarlas fuera de esta función
+    global raqueta_1, raqueta_2, raqueta_3, raqueta_4
+
+    # Raqueta 1 (izquierda)
+    raqueta_1 = tt.Turtle()
+    raqueta_1.speed(0)
+    raqueta_1.shape("square")
+    raqueta_1.shapesize(stretch_wid=5, stretch_len=1)
+    raqueta_1.color(colores_raquetas[0])
+    raqueta_1.penup()
+    raqueta_1.goto(-((ancho / 2) - 50), 0)
+
+    # Raqueta 2 (derecha)
+    raqueta_2 = tt.Turtle()
+    raqueta_2.speed(0)
+    raqueta_2.shape("square")
+    raqueta_2.shapesize(stretch_wid=5, stretch_len=1)
+    raqueta_2.color(colores_raquetas[1])
+    raqueta_2.penup()
+    raqueta_2.goto(((ancho / 2) - 50), 0)
+
+    # Raquetas 3 y 4 (solo si hay 4 jugadores)
+    if jugadores == 4:
+        # Raqueta 3 (arriba)
+        raqueta_3 = tt.Turtle()
+        raqueta_3.speed(0)
+        raqueta_3.shape("square")
+        raqueta_3.shapesize(stretch_wid=1, stretch_len=5)
+        raqueta_3.color(colores_raquetas[2])
+        raqueta_3.penup()
+        raqueta_3.goto(0, ((alto / 2) - 50))
+
+        # Raqueta 4 (abajo)
+        raqueta_4 = tt.Turtle()
+        raqueta_4.speed(0)
+        raqueta_4.shape("square")
+        raqueta_4.shapesize(stretch_wid=1, stretch_len=5)
+        raqueta_4.color(colores_raquetas[3])
+        raqueta_4.penup()
+        raqueta_4.goto(0, -((alto / 2) - 50))
+
+
+# Función para crear la pelota
+def crear_pelota():
+    pelota = tt.Turtle()
+    pelota.speed(0)
+    pelota.shape("square")
+    pelota.color("white")
+    pelota.penup()
+    pelota.goto(0, 0)
+    pelota_dx = random.choice([-2, 2])
+    pelota_dy = random.choice([-2, 2])
+    return pelota, pelota_dx, pelota_dy
+
+
+# Función para mostrar el menú de selección de jugadores
+def mostrar_menu():
+    global jugadores
+    menu = tt.Turtle()
+    menu.speed(0)
+    menu.color("white")
+    menu.penup()
+    menu.hideturtle()
+    menu.goto(0, 100)
+    menu.write("Bienvenido a Pong", align="center", font=("Comic Sans MS", 24, "bold"))
+
+    menu.goto(0, 50)
+    menu.write("Seleccione el número de jugadores:", align="center", font=("Comic Sans MS", 18))
+    menu.goto(0, 0)
+    menu.write("1) 2 Jugadores (Presione 1)", align="center", font=("Comic Sans MS", 18))
+    menu.goto(0, -50)
+    menu.write("2) 4 Jugadores (Presione 2)", align="center", font=("Comic Sans MS", 18))
+
+    # Funciones para la selección del número de jugadores
+    def seleccion_2():
+        global jugadores
+        jugadores = 2
+        menu.clear()
+        mostrar_colores()
+
+    def seleccion_4():
+        global jugadores
+        jugadores = 4
+        menu.clear()
+        mostrar_colores()
+
+    # La ventana espera por entradas de teclado
+    ventana.listen()
+
+    # Se asignan funciones a las teclas "1" y "2"
+    ventana.onkeypress(seleccion_2, "1")
+    ventana.onkeypress(seleccion_4, "2")
+
+
+# Función para mostrar las instrucciones de las teclas
+def mostrar_instrucciones():
+    instrucciones = tt.Turtle()
+    instrucciones.speed(0)
+    instrucciones.color("white")
+    instrucciones.penup()
+    instrucciones.hideturtle()
+    instrucciones.goto(0, 100)
+    instrucciones.write("Controles del Juego", align="center", font=("Comic Sans MS", 24, "bold"))
+
+    instrucciones.goto(0, 50)
+    instrucciones.write("Jugador 1 (Lado izquierdo): W (Arriba), S (Abajo)", align="center", font=("Comic Sans MS", 16))
+
+    instrucciones.goto(0, 20)
+    instrucciones.write("Jugador 2 (Lado derecho): Flecha Arriba, Flecha Abajo", align="center", font=("Comic Sans MS", 16))
+
+    if jugadores == 4:
+        instrucciones.goto(0, -10)
+        instrucciones.write("Jugador 3 (Lado superior): V (Izquierda), K (Derecha)", align="center", font=("Comic Sans MS", 16))
+
+        instrucciones.goto(0, -40)
+        instrucciones.write("Jugador 4 (Lado inferior): 4 (Izquierda), 5 (Derecha)", align="center", font=("Comic Sans MS", 16))
+
+    instrucciones.goto(0, -80)
+    instrucciones.write("Presiona ESPACIO para comenzar...", align="center", font=("Comic Sans MS", 16))
+
+    # Esperar una tecla para iniciar el juego
+    def iniciar():
+        instrucciones.clear()
+        ventana.onkeypress(None, "space")
+        iniciar_juego()
+
+    ventana.listen()
+    # Se elimina el keybinding de las teclas "1","2","3" y "4" para que no interfieran en el juego
+    ventana.onkeypress(None, "1")
+    ventana.onkeypress(None, "2")
+    ventana.onkeypress(None, "3")
+    ventana.onkeypress(None, "4")
+    ventana.onkeypress(None, "Return")
+    # Se agrega un keybinding para iniciar el juego
+    ventana.onkeypress(iniciar, "space")
+
+# Función para mostrar el menú de selección de colores
+def mostrar_colores():
+    # Se crea el menú de colores
+    color_menu = tt.Turtle()
+    color_menu.speed(0)
+    color_menu.color("white")
+    color_menu.penup()
+    color_menu.hideturtle()
+    color_menu.goto(0, 100)
+    color_menu.write("Elige los colores de las raquetas", align="center", font=("Comic Sans MS", 24, "bold"))
+
+    # Se crean funciones para asignarle colores a cada raqueta
+    def elegir_color_raqueta_1():
+        # Las funciones le asignan el color a cada raqueta, y envían al jugador de nuevo a la pantalla de selección de raqueta
+        def rojo_raqueta_1():
+            global colores_raquetas
+            colores_raquetas[0] = "red"
+            color_menu.clear()
+            mostrar_colores()
+
+        def azul_raqueta_1():
+            global colores_raquetas
+            colores_raquetas[0] = "blue"
+            color_menu.clear()
+            mostrar_colores()
+
+        def amarillo_raqueta_1():
+            global colores_raquetas
+            colores_raquetas[0] = "yellow"
+            color_menu.clear()
+            mostrar_colores()
+            
+        def verde_raqueta_1():
+            global colores_raquetas
+            colores_raquetas[0] = "green"
+            color_menu.clear()
+            mostrar_colores()
+
+        color_menu.clear()
+        color_menu.goto(0, 50)
+        color_menu.write("Presione 'r' para rojo, 'b' para azul, 'y' para amarillo y 'g' para verde", align="center", font=("Comic Sans MS", 16, "bold"))
+        
+        # La ventana espera a que se seleccione el color
+        ventana.listen()
+    
+        ventana.onkeypress(rojo_raqueta_1, "r")
+        ventana.onkeypress(azul_raqueta_1, "b")
+        ventana.onkeypress(amarillo_raqueta_1, "y")
+        ventana.onkeypress(verde_raqueta_1, "g")
+
+
+    def elegir_color_raqueta_2():
+        def rojo_raqueta_2():
+            global colores_raquetas
+            colores_raquetas[1] = "red"
+            color_menu.clear()
+            mostrar_colores()
+
+        def azul_raqueta_2():
+            global colores_raquetas
+            colores_raquetas[1] = "blue"
+            color_menu.clear()
+            mostrar_colores()
+
+        def amarillo_raqueta_2():
+            global colores_raquetas
+            colores_raquetas[1] = "yellow"
+            color_menu.clear()
+            mostrar_colores()
+            
+        def verde_raqueta_2():
+            global colores_raquetas
+            colores_raquetas[1] = "green"
+            color_menu.clear()
+            mostrar_colores()      
+    
+        color_menu.clear()
+        color_menu.goto(0, 50)
+        color_menu.write("Presione 'r' para rojo, 'b' para azul, 'y' para amarillo y 'g' para verde", align="center", font=("Comic Sans MS", 16, "bold"))
+        ventana.listen()
+
+        ventana.onkeypress(rojo_raqueta_2, "r")
+        ventana.onkeypress(azul_raqueta_2, "b")
+        ventana.onkeypress(amarillo_raqueta_2, "y")
+        ventana.onkeypress(verde_raqueta_2, "g")
+
+
+    def elegir_color_raqueta_3():
+        def rojo_raqueta_3():
+            global colores_raquetas
+            colores_raquetas[2] = "red"
+            color_menu.clear()
+            mostrar_colores()
+
+        def azul_raqueta_3():
+            global colores_raquetas
+            colores_raquetas[2] = "blue"
+            color_menu.clear()
+            mostrar_colores()
+
+        def amarillo_raqueta_3():
+            global colores_raquetas
+            colores_raquetas[2] = "yellow"
+            color_menu.clear()
+            mostrar_colores()
+            
+        def verde_raqueta_3():
+            global colores_raquetas
+            colores_raquetas[2] = "green"
+            color_menu.clear()
+            mostrar_colores()     
+
+        color_menu.clear()
+        color_menu.goto(0, 50)
+        color_menu.write("Presione 'r' para rojo, 'b' para azul, 'y' para amarillo y 'g' para verde", align="center", font=("Comic Sans MS", 16, "bold"))
+        ventana.listen()
+    
+        ventana.onkeypress(rojo_raqueta_3, "r")
+        ventana.onkeypress(azul_raqueta_3, "b")
+        ventana.onkeypress(amarillo_raqueta_3, "y")
+        ventana.onkeypress(verde_raqueta_3, "g")
+
+
+    def elegir_color_raqueta_4():
+        def rojo_raqueta_4():
+            global colores_raquetas
+            colores_raquetas[3] = "red"
+            color_menu.clear()
+            mostrar_colores()
+
+        def azul_raqueta_4():
+            global colores_raquetas
+            colores_raquetas[3] = "blue"
+            color_menu.clear()
+            mostrar_colores()
+
+        def amarillo_raqueta_4():
+            global colores_raquetas
+            colores_raquetas[3] = "yellow"
+            color_menu.clear()
+            mostrar_colores()
+            
+        def verde_raqueta_4():
+            global colores_raquetas
+            colores_raquetas[3] = "green"
+            color_menu.clear()
+            mostrar_colores()     
+
+        color_menu.clear()
+        color_menu.goto(0, 50)
+        color_menu.write("Presione 'r' para rojo, 'b' para azul, 'y' para amarillo y 'g' para verde", align="center", font=("Comic Sans MS", 16, "bold"))
+        ventana.listen()
+    
+        ventana.onkeypress(rojo_raqueta_4, "r")
+        ventana.onkeypress(azul_raqueta_4, "b")
+        ventana.onkeypress(amarillo_raqueta_4, "y")
+        ventana.onkeypress(verde_raqueta_4, "g")
+
+    # Se crea una función para que una vez que los jugadores escojan sus colores, pasen a la pantalla de instrucciones
+    def avanzar():
+        color_menu.clear()
+        mostrar_instrucciones()
+
+    # Se escriben indicaciones a los jugadores
+    color_menu.goto(0, 50)
+    color_menu.write("Presione 1 para elegir el color del Jugador 1", align="center", font=("Comic Sans MS", 16))
+    color_menu.goto(0, 20)
+    color_menu.write("Presione 2 para elegir el color del Jugador 2", align="center", font=("Comic Sans MS", 16))
+    if jugadores == 4:
+        color_menu.goto(0, -10)
+        color_menu.write("Presione 3 para elegir el color del Jugador 3", align="center", font=("Comic Sans MS", 16))
+        color_menu.goto(0, -40)
+        color_menu.write("Presione 4 para elegir el color del Jugador 4", align="center", font=("Comic Sans MS", 16))
+
+    color_menu.goto(0, -80)
+    color_menu.write("El color predeterminado es BLANCO", align="center", font=("Comic Sans MS", 16, "bold"))
+    color_menu.goto(0, - 110)
+    color_menu.write("Presione ENTER para avanzar a las instrucciones", align="center", font=("Comic Sans MS", 16))
+
+    # Esperar que el jugador elija los colores
+    ventana.listen()
+
+    ventana.onkeypress(elegir_color_raqueta_1, "1")
+    ventana.onkeypress(elegir_color_raqueta_2, "2")
+    ventana.onkeypress(avanzar, "Return")
+    if jugadores == 4:
+        ventana.onkeypress(elegir_color_raqueta_3, "3")
+        ventana.onkeypress(elegir_color_raqueta_4, "4")
+
+    # Cada que se elija un color, se elimina el keybinding para que no interfiera con el menú
+    ventana.onkeypress(None, "r")
+    ventana.onkeypress(None, "b")
+    ventana.onkeypress(None, "y")
+    ventana.onkeypress(None, "g")
+    
+# Función para iniciar el juego
+def iniciar_juego():
+    crear_raquetas()
+    pelota, pelota_dx, pelota_dy = crear_pelota()
+
+    marcador = tt.Turtle()
+    marcador.speed(0)
+    marcador.color("white")
+    marcador.penup()
+    marcador.hideturtle()
+    marcador.goto(0, (alto / 2) - 30)
+
+    if jugadores == 2:
+        marcador.write("Jugador 1: 0      Jugador 2: 0", align="center", font=("Comic Sans MS", 18, "bold"))
+    if jugadores == 4:
+        marcador.write("Jugador 1: 0      Jugador 2: 0      Jugador 3: 0      Jugador 4: 0", align="center", font=("Comic Sans MS", 18, "bold"))
+
+    puntaje_j1 = 0
+    puntaje_j2 = 0
+    puntaje_j3 = 0
+    puntaje_j4 = 0
+
+    global ultimo_jugador
+
+    # Funciones de movimiento
+    def raqueta_1_arriba():
+        y = raqueta_1.ycor()
+        if y < ((alto / 2) - 50):
+            raqueta_1.sety(y + 25)
+
+    def raqueta_1_abajo():
+        y = raqueta_1.ycor()
+        if y > -((alto / 2) - 50):
+            raqueta_1.sety(y - 25)
+
+    def raqueta_2_arriba():
+        y = raqueta_2.ycor()
+        if y < ((alto / 2) - 50):
+            raqueta_2.sety(y + 25)
+
+    def raqueta_2_abajo():
+        y = raqueta_2.ycor()
+        if y > -((alto / 2) - 50):
+            raqueta_2.sety(y - 25)
+
+    def raqueta_3_izquierda():
+        x = raqueta_3.xcor()
+        if x > -((ancho / 2) - 50):
+            raqueta_3.setx(x - 25)
+
+    def raqueta_3_derecha():
+        x = raqueta_3.xcor()
+        if x < ((ancho / 2) - 50):
+            raqueta_3.setx(x + 25)
+
+    def raqueta_4_izquierda():
+        x = raqueta_4.xcor()
+        if x > -((ancho / 2) - 50):
+            raqueta_4.setx(x - 25)
+
+    def raqueta_4_derecha():
+        x = raqueta_4.xcor()
+        if x < ((ancho / 2) - 50):
+            raqueta_4.setx(x + 25)
+
+    # Se asignan las teclas a las funciones de movimiento
+    ventana.listen()
+    ventana.onkeypress(raqueta_1_arriba, "w")
+    ventana.onkeypress(raqueta_1_abajo, "s")
+    ventana.onkeypress(raqueta_2_arriba, "Up")
+    ventana.onkeypress(raqueta_2_abajo, "Down")
+    if jugadores == 4:
+        ventana.onkeypress(raqueta_3_izquierda, "v")
+        ventana.onkeypress(raqueta_3_derecha, "k")
+        ventana.onkeypress(raqueta_4_izquierda, "4")
+        ventana.onkeypress(raqueta_4_derecha, "5")
+
+    while True:
+        # Se define el movimiento de la pelota
+        pelota.setx(pelota.xcor() + pelota_dx)
+        pelota.sety(pelota.ycor() + pelota_dy)
+
+        # Se define, para el modo de dos jugadores, los choques con las paredes superior e inferior
+        if jugadores == 2 and (pelota.ycor() > (alto / 2) - 10 or pelota.ycor() < -(alto / 2) + 10):
+            pelota_dy *= -1
+            ws.PlaySound("bounce.wav", ws.SND_ASYNC)
+
+        # Se definen los choques con las raquetas, y se registra el último jugador en tocar la pelota
+        if (-((ancho/2) - 50) < pelota.xcor() < -((ancho/2) - 60)) and (raqueta_1.ycor() - 50 < pelota.ycor() < raqueta_1.ycor() + 50):
+            pelota_dx *= -1
+            ultimo_jugador = 1
+            ws.PlaySound("bounce.wav", ws.SND_ASYNC)
+
+        if (((ancho/2) - 60) < pelota.xcor() < ((ancho/2) - 50)) and (raqueta_2.ycor() - 50 < pelota.ycor() < raqueta_2.ycor() + 50):
+            pelota_dx *= -1
+            ultimo_jugador = 2
+            ws.PlaySound("bounce.wav", ws.SND_ASYNC)
+
+        if jugadores == 4:
+            if (((alto/2) - 60) < pelota.ycor() > ((alto/2) - 50)) and (raqueta_3.xcor() - 50 < pelota.xcor() < raqueta_3.xcor() + 50 ):
+                pelota_dy *= -1
+                ultimo_jugador = 3
+                ws.PlaySound("bounce.wav", ws.SND_ASYNC)
+
+            if (-((alto/2) - 50) < pelota.ycor() < -((alto/2) - 60)) and (raqueta_4.xcor() - 50 < pelota.xcor() < raqueta_4.xcor() + 50):
+                pelota_dy *= -1
+                ultimo_jugador = 4
+                ws.PlaySound("bounce.wav", ws.SND_ASYNC)
+
+        # Se asignan los puntajes
+        if pelota.xcor() > (ancho / 2) - 10:
+            pelota.goto(0, 0)
+            pelota_dx = random.choice([-2, 2])
+            pelota_dy = random.choice([-2, 2])
+
+            # Se verifica cual fue el último jugador en tocar la pelota, y se le asigna el punto a él
+            if ultimo_jugador == 1:
+                puntaje_j1 += 1
+            elif ultimo_jugador == 2:
+                puntaje_j2 += 1
+            elif ultimo_jugador == 3:
+                puntaje_j3 += 1
+            elif ultimo_jugador == 4:
+                puntaje_j4 += 1
+
+            # Se reestablece par aque ningún jugador sea el último en haber tocado la pelota luego de haber asignado el punto
+            ultimo_jugador = 0
+            # Se reescribe el marcador
+            marcador.clear()
+            
+            if jugadores == 2:
+                marcador.write("Jugador 1: {}      Jugador 2: {}".format(puntaje_j1, puntaje_j2), align="center", font=("Comic Sans MS", 18, "bold"))
+            if jugadores == 4:
+                marcador.write("Jugador 1: {}      Jugador 2: {}      Jugador 3: {}      Jugador 4: {}".format(puntaje_j1, puntaje_j2, puntaje_j3, puntaje_j4), align="center", font=("Comic Sans MS", 18, "bold"))
+
+        if pelota.xcor() < -(ancho / 2) + 10:
+            pelota.goto(0, 0)
+            pelota_dx = random.choice([-2, 2])
+            pelota_dy = random.choice([-2, 2])
+
+            if ultimo_jugador == 1:
+                puntaje_j1 += 1
+            elif ultimo_jugador == 2:
+                puntaje_j2 += 1
+            elif ultimo_jugador == 3:
+                puntaje_j3 += 1
+            elif ultimo_jugador == 4:
+                puntaje_j4 += 1
+            
+            ultimo_jugador = 0
+            marcador.clear()
+
+            if jugadores == 2:
+                marcador.write("Jugador 1: {}      Jugador 2: {}".format(puntaje_j1, puntaje_j2), align="center", font=("Comic Sans MS", 18, "bold"))
+            if jugadores == 4:
+                marcador.write("Jugador 1: {}      Jugador 2: {}      Jugador 3: {}      Jugador 4: {}".format(puntaje_j1, puntaje_j2, puntaje_j3, puntaje_j4), align="center", font=("Comic Sans MS", 18, "bold"))
+
+        if jugadores == 4:
+            if pelota.ycor() > (alto / 2) - 10:
+                pelota.goto(0, 0)
+                pelota_dx = random.choice([-2, 2])
+                pelota_dy = random.choice([-2, 2])
+
+                if ultimo_jugador == 1:
+                    puntaje_j1 += 1
+                elif ultimo_jugador == 2:
+                    puntaje_j2 += 1
+                elif ultimo_jugador == 3:
+                    puntaje_j3 += 1
+                elif ultimo_jugador == 4:
+                    puntaje_j4 += 1
+
+                ultimo_jugador = 0
+                marcador.clear()
+                marcador.write("Jugador 1: {}      Jugador 2: {}      Jugador 3: {}      Jugador 4: {}".format(puntaje_j1, puntaje_j2, puntaje_j3, puntaje_j4), align="center", font=("Comic Sans MS", 18, "bold"))
+
+            if pelota.ycor() < -(alto / 2) + 10:
+                pelota.goto(0, 0)
+                pelota_dx = random.choice([-2, 2])
+                pelota_dy = random.choice([-2, 2])
+
+                if ultimo_jugador == 1:
+                    puntaje_j1 += 1
+                elif ultimo_jugador == 2:
+                    puntaje_j2 += 1
+                elif ultimo_jugador == 3:
+                    puntaje_j3 += 1
+                elif ultimo_jugador == 4:
+                    puntaje_j4 += 1
+                
+                ultimo_jugador = 0
+                marcador.clear()
+                marcador.write("Jugador 1: {}      Jugador 2: {}      Jugador 3: {}      Jugador 4: {}".format(puntaje_j1, puntaje_j2, puntaje_j3, puntaje_j4), align="center", font=("Comic Sans MS", 18, "bold"))
+
+        ventana.update()
+        time.sleep(0.005)
+
+
+# Mostrar el menú inicial
+mostrar_menu()
+ventana.mainloop()
